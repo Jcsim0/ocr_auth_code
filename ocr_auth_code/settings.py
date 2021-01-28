@@ -127,7 +127,7 @@ STATICFILES_DIRS = (
 )
 
 # Log File
-BASE_LOG_DIR = '/root/logs' if 'linux' == sys.platform else os.path.join(BASE_DIR, "log")
+BASE_LOG_DIR = '/root/ocr_logs' if 'linux' == sys.platform else os.path.join(BASE_DIR, "log")
 LOGGING = {
     'version': 1,  # 保留字
     'disable_existing_loggers': False,  # 禁用已经存在的logger实例
