@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <title>验证码识别平台</title>
+    <link rel="stylesheet" href="/static/layui/css/layui.css">
+    <style>
+        #Top {
+            text-align: center;
+            background-color: #fff;
+            height: 44px;
+            font-size: 15px;
+            font-weight: 500;
+            background-size: 44px 44px;;
+            border-bottom: 1px solid #e2e2e2;
+            min-height: 150px;
+        }
+
+        #Wrapper {
+            text-align: center;
+            background-color: rgba(255, 255, 255, 0.98);
+            {#background-image: url(/static/img/shadow_light.png);#}
+            background-repeat: repeat-x;
+            {#margin-top: 2%;#}
+        }
+
+        .content {
+            min-width: 720px;
+            {#max-width: 720px;#}
+            margin: 0 auto;
+        }
+
+        #Main {
+            width: auto;
+            margin: 0 auto;
+        }
+
+        .box {
+            background-color: #fff;
+            border-radius: 3px;
+            box-shadow: 0 2px 3px rgba(0, 0, 0, 0.1);
+            border-bottom: 1px solid #e2e2e2;
+            height: 150px;
+            margin-top: 1%;
+        }
+
+        .header{
+            margin-bottom: 20px;
+        }
+
+
+        a {
+            color: #778087;
+        }
+
+        a.top:hover {
+            color: #99a;
+            text-decoration: none;
+        }
+
+        a:hover {
+            color: #778399;
+        }
+
+        a:active {
+            color: #778087;
+            text-decoration: none;
+            word-break: break-all;
+        }
+        .no_hove_line a:hover {
+            text-decoration: none;
+            color: #343a40;
+        }
+        .page-item.active .page-link {
+            background-color: #aab0c6;
+            border-color: #aab0c6;
+        }
+
+        .topic-info a, strong {
+            margin-right: 3px;
+            margin-left: 3px;
+        }
+        .div-table{
+            width: 95%;
+            margin: 0 auto
+        }
+
+        .layui-form-item{
+            margin-bottom: 0px !important;
+        }
+
+    </style>
+</head>
+<body>
+{% csrf_token %}
+<div id="Top">
+    <div class="content">
+        <div>
+            <div class="box">
+                <div class="header"><h1 style="text-align: center;">验证码图片上传（图片格式：['png', 'jpg', 'jpeg']）</h1></div>
+                <div >
+
+                     <div class="layui-form-item">
+                        <div class="layui-inline">
+                             <div class="layui-input-inline">
+                                 <input type="file" name="file" id="input_file">
+                             </div>
+                        </div>
+                         <div class="layui-inline">
+                             <div class="layui-input-inline">
+                                 <button  class="layui-btn" id="import_img_but" >上传并识别</button>
+                             </div>
+                        </div>
+                    </div>
+              </div>
+          </div>
+        </div>
+    </div>
+</div>
+
+
+<div id="Wrapper">
+    <div class="content">
+        <div id="Main">
+            <div class="">
+                <div class="layui-form-item">
+                    <div class="layui-inline">
+                        <div class="layui-input-inline" style="width: auto;">
+                            <div class="layui-form-mid layui-word-aux">验证码：<span id="auth_code"></span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script src="/static/js/jquery.min.js"></script>
+<script src="/static/js/jquery-3.3.1.js"></script>
+<script src="/static/js/jquery.cookie.js"></script>
+<script src="/static/layui/layui.all.js"></script>
+
+<script>
+ {% comment %}    /* title 变化 */
+    document.addEventListener("visibilitychange", function () {
+        if (document.hidden) {
+            $('title').text('学习机');
+        } else {
+            $('title').text('欢迎回来ヽ(✿ﾟ▽ﾟ)ノ');
+            setTimeout("$('title').text('学习机');", 3000);
+        }
+    }, false);{% endcomment %}
+
+     $("#import_img_but").click(function (){
+
+        const fileInput = $('#input_file').get(0).files[0];
+        if(fileInput){
+            var formData = new FormData();
+            formData.append("file", fileInput);
+            formData.append("classify", "auth_code");
+            {#formData.append("name",name);#}
+            var searching = layer.msg('正在识别验证码,请稍后', {
+                    icon: 16,  //加载图标
+                    shade: 0.5,
+                    time:false //取消自动关闭
+                });
+            $.ajax({
+                url: "/authCodeOcr",
+                type : 'POST',
+                async : true,
+                data : formData,
+                // 告诉jQuery不要去处理发送的数据
+                processData : false,
+                // 告诉jQuery不要去设置Content-Type请求头
+                contentType : false,
+                success : function(res) {
+                    layer.close(searching);  //关闭加载提示窗
+                    if(res.state === 200){
+                        $("#auth_code").text(JSON.parse(res.data)["auth_code"])
+                    }else {
+                        layer.msg(res.msg)
+                    }
+                },
+                error: function (XMLHttpRequest,textStatus){
+                    layer.close(searching);  //关闭加载提示窗
+                    layer.msg("状态码："+XMLHttpRequest.status+"。系统错误，请联系管理员")
+                }
+            })
+        }else {
+            layer.msg("请上传文件！")
+        }
+
+    })
+
+</script>
+</body>
+</html>
